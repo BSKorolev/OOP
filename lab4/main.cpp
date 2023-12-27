@@ -29,11 +29,6 @@ public:
         }
     }
 
-    void relabelKey(const std::string& key, const std::string& virtualKey)
-    {
-        actions.erase(key);
-        setAction(key, virtualKey);
-    }
 };
 
 class Command
