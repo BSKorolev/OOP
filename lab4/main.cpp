@@ -1,172 +1,173 @@
 #include <iostream>
-#include <string>
-#include <vector>
-#include <unordered_map>
+#include <string> 
 
-class VirtualKeyboard
-{
-protected:
-    std::unordered_map<std::string, std::string> actions;
-
-public:
-    void setAction(const std::string& key, const std::string& virtualKey)
-    {
-        actions[key] = virtualKey;
-    }
-
-    std::string getVirtualKey(const std::string& key)
-    {
-        if (actions.find(key) == actions.end()) {
-            return "";
-        }
-        return actions[key];
-    }
-
-    void undoAction()
-    {
-        if (!actions.empty()) {
-            actions.erase(actions.end());   
-        }
-    }
-
+struct ActionAndButton {
+    std::string act;
+    std::string button;
 };
 
-class Command
-{
-private:
-    std::string key;
-    std::string virtualKey;
-
+class Keyboard {
 public:
-    Command(const std::string& key, const std::string& virtualKey)
-        : key(key), virtualKey(virtualKey)
-    {
+    Keyboard() {
+
+    }
+    ActionAndButton actionAndButton[100];
+    int t = 0;
+
+    void NewAct() {
+        std::cout << "Enter the name of the button" << std::endl;
+        std::string newButton;
+        std::cin >> newButton;
+        for (int i = 0; i < t; i++) {
+            if (newButton == actionAndButton[i].button) {
+                std::cout << "This button already exists. Please choose another one." << std::endl;
+                return; 
+            }
+        }
+        actionAndButton[t].button = newButton;
+        std::cout << "Enter action" << std::endl;
+        std::cin.ignore();
+        std::getline(std::cin, actionAndButton[t].act);
+        t++;
     }
 
-    std::string getKey() const
-    {
-        return key;
+    void PressButton(std::string s) {
+        bool tmp = false;
+        for (int i = 0; i < t; i++) {
+            if (s == actionAndButton[i].button) {
+                std::cout << "Action for button " << s << ": " << actionAndButton[i].act << std::endl;
+                tmp = true;
+                i = t;
+            }
+        }
+        if (!tmp) {
+            std::cout << "This button has no action. Do you want to add it" << std::endl;
+            std::cout << "0. No" << std::endl;
+            std::cout << "1. Yes" << std::endl;
+            int i;
+            std::cin >> i;
+            if (i == 1) {
+                this->NewAct();
+            }
+        }
     }
 
-    std::string getVirtualKey() const
-    {
-        return virtualKey;
+    void Help() {
+        for (int i = 0; i < t; i++) {
+            std::cout << actionAndButton[i].button + " " + actionAndButton[i].act << std::endl;
+        }
     }
+
+    void ShowAssignments() {
+        std::cout << "List of reassignments:" << std::endl;
+        for (int i = 0; i < t; i++) {
+            std::cout << "Button: " << actionAndButton[i].button << std::endl;
+            std::cout << "Action: " << actionAndButton[i].act << std::endl;
+            std::cout << std::endl;
+        }
+    }
+};
+
+class Workflow {
+public:
+    Workflow() {
+
+    }
+
+    void Undo(Keyboard& m_key) {
+        std::cout << "Undo" << std::endl;
+        if (nnumberOfActions == 0) {
+            m_key.t--;
+        }
+        for (int i = 0; i < m_key.t; i++) {
+            if ((Action[nnumberOfActions - 1].act == m_key.actionAndButton[i].act) && (Action[nnumberOfActions - 1].button == m_key.actionAndButton[i].button)) {
+                nnumberOfActions--;
+                m_key.t--;
+                i = m_key.t;
+            }
+            else if ((Action[nnumberOfActions - 1].act != m_key.actionAndButton[i].act) && (Action[nnumberOfActions - 1].button == m_key.actionAndButton[i].button)) {
+                m_key.actionAndButton[i].act = Action[nnumberOfActions - 1].act;
+                nnumberOfActions--;
+                i = m_key.t;
+            }
+        }
+    }
+
+    bool Reassignment(std::string s, Keyboard& m_key) {
+        std::cout << "Assign another action to this button" << std::endl;
+        bool tmp = false;
+        for (int i = 0; i < m_key.t; i++) {
+            if (s == m_key.actionAndButton[i].button) {
+                Action[nnumberOfActions] = m_key.actionAndButton[i];
+                nnumberOfActions++;
+                std::cin.ignore();
+                std::getline(std::cin, m_key.actionAndButton[i].act); 
+                tmp = true;
+                i = m_key.t;
+            }
+        }
+        if (!tmp) {
+            std::cout << "This button has no action. Do you want to add it or cancel the previous action?" << std::endl;
+            std::cout << "A. Add" << std::endl;
+            std::cout << "C. Cancel" << std::endl;
+            char choice;
+            std::cin >> choice;
+            if (choice == 'A') {
+                m_key.NewAct();
+                return true;
+            }
+            else if (choice == 'C') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+   
+private:
+    ActionAndButton Action[200];
+    int nnumberOfActions = 0;
 };
 
 int main()
 {
-    Command copy("c", "ctrl+c");
-    Command paste("p", "ctrl+v");
+    Keyboard Key;
+    Workflow work;
 
-    std::cout << "List of commands: \n";
-    std::cout << "Reassign keys - settings\n";
-    std::cout << "Continue usage - continue \n";
-    std::cout << "Undo previous action - undo \n";
-    std::cout << "Exit - exit\n\n";
+    int choice = 1;
 
-    VirtualKeyboard virtualKeyboard;
-    virtualKeyboard.setAction(copy.getKey(), copy.getVirtualKey());
-    virtualKeyboard.setAction(paste.getKey(), paste.getVirtualKey());
+    while (choice != 0) {
+        std::cout << "Continue?" << std::endl;
+        std::cout << "0 - Exit" << std::endl;
+        std::cout << "1 - Add" << std::endl;
+        std::cout << "2 - Reassignment" << std::endl;
+        std::cout << "3 - Undo" << std::endl;
+        std::cout << "4 - Show Assignments" << std::endl;
+        std::cout << "Choose action: ";
+        std::cin >> choice;
 
-    std::string key;
-
-    while (true) {
-        std::cout << "Enter a key or combination: \n";
-        std::getline(std::cin, key);
-
-        if (key == "continue") {
-            break;
+        if (choice == 1) {
+            Key.NewAct();
         }
-        if (key == "exit") {
-            return 0;
-        }
-        if (key == "undo") {
-            virtualKeyboard.undoAction();
-        }
-        else {
-            std::cout << "Enter a new key or combination: ";
-            std::string virtualKey;
-            std::getline(std::cin, virtualKey);
-
-            if (key.find('+') != std::string::npos && virtualKey.find('+') != std::string::npos) {
-                Command command(key, virtualKey);
+        else if (choice == 2) {
+            std::cout << "Enter button to reassignment: ";
+            std::string button;
+            std::cin >> button;
+            bool success = work.Reassignment(button, Key);
+            if (success) {
+                std::cout << "Successful!" << std::endl;
             }
             else {
-                virtualKeyboard.setAction(key, virtualKey);
+                std::cout << "Canceled!" << std::endl;
             }
         }
+        else if (choice == 3) {
+            work.Undo(Key);
+            std::cout << "Undo!" << std::endl;
+        }
+        else if (choice == 4) {
+            Key.ShowAssignments();
+        }
+        return 0;
     }
-
-    const std::vector<std::string> VIRTUAL_KEYBOARD = {
-        "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "=", "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
-        "shift", "a", "s", "d", "f", "g", "h", "j", "k", "l", "enter", "space", "ctrl", "z", "x", "c", "v", "b", "n", "m", "ctrl", "backspace"
-    };
-
-    for (const std::string& key : VIRTUAL_KEYBOARD) {
-        if (virtualKeyboard.getVirtualKey(key).empty()) {
-            virtualKeyboard.setAction(key, key);
-        }
-    }
-
-    std::string str = "";
-    std::string copiedString = "";
-    std::vector<std::string> actions;
-
-    std::cout << "\nPress a key: \n";
-    while (true) {
-        std::cout << "Enter a key or combination: ";
-        std::getline(std::cin, key);
-
-        if (key == "continue") {
-            break;
-        }
-        if (key == "exit") {
-            return 0;
-        }
-        if (key == "undo") {
-            str = str.substr(0, str.size() - 1);
-        }
-        else if (key == "undo settings") {
-            virtualKeyboard.setAction(actions.back(), actions.back());
-            actions.pop_back();
-        }
-        else if (key == "settings") {
-            std::cout << "Reassign keys mode enabled: \n";
-            std::cout << "Enter a key or combination: ";
-            std::string reassignKey;
-            std::getline(std::cin, reassignKey);
-            actions.push_back(reassignKey);
-            std::cout << "Enter a new key or combination: ";
-            std::string virtualKey;
-            std::getline(std::cin, virtualKey);
-            virtualKeyboard.setAction(reassignKey, virtualKey);
-            std::getline(std::cin, key);
-            if (key == "continue") {
-                continue;
-            }
-            if (key == "exit") {
-                return 0;
-            }
-            if (key == "undo") {
-                virtualKeyboard.undoAction();
-                virtualKeyboard.setAction(reassignKey, reassignKey);
-            }
-        }
-        else {
-            std::string virtualKey = virtualKeyboard.getVirtualKey(key);
-            if (virtualKey.find('+') == std::string::npos) {
-                str += virtualKey;
-            }
-            else if (virtualKey == "ctrl+c") {
-                copiedString = str;
-            }
-            else {
-                str += copiedString;
-            }
-        }
-        std::cout << str << "\n";
-    }
-
-    return 0;
 }
