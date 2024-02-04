@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string> 
+#include <string>
 
 struct ActionAndButton {
     std::string act;
@@ -9,165 +9,174 @@ struct ActionAndButton {
 class Keyboard {
 public:
     Keyboard() {
-
+        n = 0;
     }
-    ActionAndButton actionAndButton[100];
-    int t = 0;
 
     void NewAct() {
-        std::cout << "Enter the name of the button" << std::endl;
+        std::cout << "Enter the name of the button:" << std::endl;
         std::string newButton;
         std::cin >> newButton;
-        for (int i = 0; i < t; i++) {
+
+        for (int i = 0; i < n; i++) {
             if (newButton == actionAndButton[i].button) {
                 std::cout << "This button already exists. Please choose another one." << std::endl;
-                return; 
+                return;
             }
         }
-        actionAndButton[t].button = newButton;
-        std::cout << "Enter action" << std::endl;
+
+        actionAndButton[n].button = newButton;
+
+        std::cout << "Enter the action:" << std::endl;
+        std::string newAction;
         std::cin.ignore();
-        std::getline(std::cin, actionAndButton[t].act);
-        t++;
+        std::getline(std::cin, newAction);
+
+        actionAndButton[n].act = newAction;
+
+        n++;
     }
 
-    void PressButton(std::string s) {
-        bool tmp = false;
-        for (int i = 0; i < t; i++) {
-            if (s == actionAndButton[i].button) {
-                std::cout << "Action for button " << s << ": " << actionAndButton[i].act << std::endl;
-                tmp = true;
-                i = t;
+    void PressButton(const std::string& button) {
+        std::string action;
+        bool found = false;
+
+        for (int i = 0; i < n; i++) {
+            if (button == actionAndButton[i].button) {
+                action = actionAndButton[i].act;
+                found = true;
+                break;
             }
         }
-        if (!tmp) {
-            std::cout << "This button has no action. Do you want to add it" << std::endl;
+
+        if (found) {
+            std::cout << "Action for button " << button << ": " << action << std::endl;
+        }
+        else {
+            std::cout << "This button has no action. Do you want to add it?" << std::endl;
             std::cout << "0. No" << std::endl;
             std::cout << "1. Yes" << std::endl;
-            int i;
-            std::cin >> i;
-            if (i == 1) {
-                this->NewAct();
-            }
-        }
-    }
 
-    void Help() {
-        for (int i = 0; i < t; i++) {
-            std::cout << actionAndButton[i].button + " " + actionAndButton[i].act << std::endl;
+            int choice;
+            std::cin >> choice;
+
+            if (choice == 1) {
+                NewAct();
+            }
         }
     }
 
     void ShowAssignments() {
-        std::cout << "List of reassignments:" << std::endl;
-        for (int i = 0; i < t; i++) {
+        std::cout << "List of assignments:" << std::endl;
+        for (int i = 0; i < n; i++) {
             std::cout << "Button: " << actionAndButton[i].button << std::endl;
             std::cout << "Action: " << actionAndButton[i].act << std::endl;
             std::cout << std::endl;
         }
     }
+
+    ActionAndButton* GetActionAndButton() {
+        return actionAndButton;
+    }
+
+    int GetN() {
+        return n;
+    }
+    void DecreaseN() {
+        n--;
+    }
+private:
+    ActionAndButton actionAndButton[100];
+    int n;
 };
 
 class Workflow {
 public:
     Workflow() {
-
+        numberOfActions = 0;
     }
 
-    void Undo(Keyboard& m_key) {
-        std::cout << "Undo" << std::endl;
-        if (nnumberOfActions == 0) {
-            m_key.t--;
-        }
-        for (int i = 0; i < m_key.t; i++) {
-            if ((Action[nnumberOfActions - 1].act == m_key.actionAndButton[i].act) && (Action[nnumberOfActions - 1].button == m_key.actionAndButton[i].button)) {
-                nnumberOfActions--;
-                m_key.t--;
-                i = m_key.t;
-            }
-            else if ((Action[nnumberOfActions - 1].act != m_key.actionAndButton[i].act) && (Action[nnumberOfActions - 1].button == m_key.actionAndButton[i].button)) {
-                m_key.actionAndButton[i].act = Action[nnumberOfActions - 1].act;
-                nnumberOfActions--;
-                i = m_key.t;
-            }
-        }
-    }
+    void ReassignAction(const std::string& button, int n, ActionAndButton* actionAndButton) {
+        std::cout << "Assign another action to button " << button << ":" << std::endl;
+        bool found = false;
 
-    bool Reassignment(std::string s, Keyboard& m_key) {
-        std::cout << "Assign another action to this button" << std::endl;
-        bool tmp = false;
-        for (int i = 0; i < m_key.t; i++) {
-            if (s == m_key.actionAndButton[i].button) {
-                Action[nnumberOfActions] = m_key.actionAndButton[i];
-                nnumberOfActions++;
+        for (int i = 0; i < n; i++) {
+            if (button == actionAndButton[i].button) {
+                actions[numberOfActions] = actionAndButton[i];
+                numberOfActions++;
+
+                std::string newAction;
                 std::cin.ignore();
-                std::getline(std::cin, m_key.actionAndButton[i].act); 
-                tmp = true;
-                i = m_key.t;
-            }
-        }
-        if (!tmp) {
-            std::cout << "This button has no action. Do you want to add it or cancel the previous action?" << std::endl;
-            std::cout << "A. Add" << std::endl;
-            std::cout << "C. Cancel" << std::endl;
-            char choice;
-            std::cin >> choice;
-            if (choice == 'A') {
-                m_key.NewAct();
-                return true;
-            }
-            else if (choice == 'C') {
-                return false;
-            }
-        }
-        return true;
-    }
+                std::getline(std::cin, newAction);
 
-   
+                actionAndButton[i].act = newAction;
+                found = true;
+                break;
+            }
+        }
+    }
+    void Undo(Keyboard& keyboard, ActionAndButton* actionAndButton) {
+        std::cout << "Undo" << std::endl;
+        if (numberOfActions == 0) {
+            keyboard.DecreaseN();
+        }
+        for (int i = 0; i < keyboard.GetN(); i++) {
+            if ((actions[numberOfActions - 1].act == keyboard.GetActionAndButton()[i].act) && (actions[numberOfActions - 1].button == keyboard.GetActionAndButton()[i].button)) {
+                numberOfActions--;
+                keyboard.DecreaseN();
+                i = keyboard.GetN();
+            }
+            else if ((actions[numberOfActions - 1].act != keyboard.GetActionAndButton()[i].act) && (actions[numberOfActions - 1].button == keyboard.GetActionAndButton()[i].button)) {
+                keyboard.GetActionAndButton()[i].act = actions[numberOfActions - 1].act;
+                numberOfActions--;
+                i = keyboard.GetN();
+            }
+        }
+    }
 private:
-    ActionAndButton Action[200];
-    int nnumberOfActions = 0;
+    ActionAndButton actions[100];
+    int numberOfActions;
 };
 
-int main()
-{
-    Keyboard Key;
-    Workflow work;
+int main() {
+    Keyboard keyboard;
+    Workflow workflow;
 
-    int choice = 1;
+    char option;
+    std::string button;
 
-    while (choice != 0) {
-        std::cout << "Continue?" << std::endl;
-        std::cout << "0 - Exit" << std::endl;
-        std::cout << "1 - Add" << std::endl;
-        std::cout << "2 - Reassignment" << std::endl;
-        std::cout << "3 - Undo" << std::endl;
-        std::cout << "4 - Show Assignments" << std::endl;
-        std::cout << "Choose action: ";
-        std::cin >> choice;
+    do {
+        std::cout << "Menu:" << std::endl;
+        std::cout << "1. New Action" << std::endl;
+        std::cout << "2. Assign Action" << std::endl;
+        std::cout << "3. Press Button" << std::endl;
+        std::cout << "4. Show Assignments" << std::endl;
+        std::cout << "5. Undo" << std::endl;
+        std::cout << "0. Exit" << std::endl;
 
-        if (choice == 1) {
-            Key.NewAct();
-        }
-        else if (choice == 2) {
-            std::cout << "Enter button to reassignment: ";
-            std::string button;
+        std::cin >> option;
+
+        switch (option) {
+        case '1':
+            keyboard.NewAct();
+            break;
+        case '2':
+            std::cout << "Enter the button you want to assign an action to:" << std::endl;
             std::cin >> button;
-            bool success = work.Reassignment(button, Key);
-            if (success) {
-                std::cout << "Successful!" << std::endl;
-            }
-            else {
-                std::cout << "Canceled!" << std::endl;
-            }
+            workflow.ReassignAction(button, keyboard.GetN(), keyboard.GetActionAndButton());
+            break;
+        case '3':
+            std::cout << "Enter the button you want to press:" << std::endl;
+            std::cin >> button;
+            keyboard.PressButton(button);
+            break;
+        case '4':
+            keyboard.ShowAssignments();
+            break;
+        case '5':
+            workflow.Undo(keyboard, keyboard.GetActionAndButton());
+            break;
         }
-        else if (choice == 3) {
-            work.Undo(Key);
-            std::cout << "Undo!" << std::endl;
-        }
-        else if (choice == 4) {
-            Key.ShowAssignments();
-        }
-        return 0;
-    }
+    } while (option != '0');
+
+    return 0;
 }
